@@ -702,6 +702,20 @@ const CATS = [
 ];
 const CAT_OTHER = { id:'other', label:'その他', icon:'📍', color:'#78909C', kw:[] };
 
+/* ═══════ Wikipedia カテゴリ → アプリカテゴリ 対応表 ═══════ */
+const CAT_WIKI_MAP = [
+  {id:'station', re:/道の駅/},
+  {id:'onsen',   re:/温泉/},
+  {id:'shrine',  re:/寺院|神社|教会|修道院|霊場|札所/},
+  {id:'castle',  re:/の城|城跡|城郭|史跡|遺跡|古墳/},
+  {id:'garden',  re:/庭園|植物園/},
+  {id:'museum',  re:/美術館|博物館|記念館|資料館|科学館|水族館|動物園|天文台/},
+  {id:'food',    re:/酒造|醸造|ワイナリー|蒸留所/},
+  {id:'nature',  re:/の山|山岳|湖沼|の湖|の沼|の池|の滝|渓谷|ダム|海岸|火山|高原|湿原|湿地|洞窟|峡谷|牧場|の島|河川/},
+  {id:'park',    re:/公園/},
+  {id:'view',    re:/景勝|名勝|百景|百選|展望/},
+];
+
 /* ═══════ Stage 1: Hard Exclude (タイトルに含まれたら即除外) ═══════ */
 const EXCLUDE_KW = [
   '小学校','中学校','高等学校','高校','大学','学園','学院','専門学校','支援学校','幼稚園','保育園','保育所',
@@ -854,7 +868,7 @@ async function fetchDetails(ids){
   const batches=[];
   for(let i=0;i<ids.length;i+=50)batches.push(ids.slice(i,i+50));
   const results=await Promise.all(batches.map(b=>
-    fetch(`${WIKI}?action=query&pageids=${b.join('|')}&prop=extracts|pageimages|info&exintro=1&explaintext=1&pithumbsize=300&inprop=url&format=json&origin=*`).then(r=>r.json())
+    fetch(`${WIKI}?action=query&pageids=${b.join('|')}&prop=extracts|pageimages|info|categories&exintro=1&explaintext=1&pithumbsize=300&inprop=url&cllimit=500&clshow=!hidden&format=json&origin=*`).then(r=>r.json())
   ));
   const all={};
   for(const j of results)if(j.query?.pages)Object.assign(all,j.query.pages);
@@ -870,7 +884,14 @@ function isExcluded(title){
   if(/駅(\s*\(.+\))?$/.test(title)&&!title.includes('道の駅')) return true;
   return false;
 }
-function categorize(title,extract){
+function categorize(title,extract,wikiCats){
+  if(wikiCats&&wikiCats.length){
+    const names=wikiCats.map(wc=>wc.title.replace(/^[^:]+:/,''));
+    for(const m of CAT_WIKI_MAP){
+      if(names.some(n=>m.re.test(n)))
+        return CATS.find(c=>c.id===m.id)||CAT_OTHER;
+    }
+  }
   const full=(title+' '+(extract||'')).toLowerCase();
   for(const c of CATS)if(c.kw.some(k=>
     k.length===1 ? title.includes(k) : full.includes(k.toLowerCase())
@@ -921,7 +942,7 @@ async function discover(){
     if(!raw.length){toast('この辺は穴場すぎました！半径を広げてみてください');return}
     const details=await fetchDetails(raw.map(r=>r.pageid));
     const scored=raw.map(r=>{const d=details[r.pageid]||{},dist=haversine(pos.lat,pos.lon,r.lat,r.lon);
-      const cat=categorize(r.title,d.extract),hasThumb=!!d.thumbnail?.source;
+      const cat=categorize(r.title,d.extract,d.categories),hasThumb=!!d.thumbnail?.source;
       return{id:r.pageid,title:r.title,lat:r.lat,lon:r.lon,dist,dir:bearing(pos.lat,pos.lon,r.lat,r.lon),
         cat,extract:d.extract||'',thumb:d.thumbnail?.source||'',
         url:d.fullurl||`https://ja.wikipedia.org/wiki/${encodeURIComponent(r.title)}`,
