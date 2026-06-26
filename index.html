@@ -119,8 +119,9 @@ header h1{font-size:20px;font-weight:800;color:var(--primary);transition:color .
 .view.active{display:flex;flex-direction:column}
 
 /* ══════════ Discover ══════════ */
-#v-discover{align-items:center;justify-content:center;gap:24px;padding:20px 16px calc(60px + env(safe-area-inset-bottom,0px) + 16px)}
-.discover-hint{font-size:13px;color:var(--text3);text-align:center;line-height:1.6;max-width:260px;transition:color .3s}
+#v-discover{align-items:center;gap:24px;padding:20px 16px calc(60px + env(safe-area-inset-bottom,0px) + 16px)}
+.discover-hint{font-size:13px;color:var(--text3);text-align:center;line-height:1.6;max-width:260px;transition:color .3s;margin-top:auto}
+.tag-row{margin-bottom:auto}
 
 /* ══════════ Button ══════════ */
 .btn-wrap{position:relative;display:flex;align-items:center;justify-content:center;padding:16px}
@@ -418,7 +419,7 @@ nav button.active{color:var(--primary)}
 [data-theme="impressionist"] nav button{font-style:italic;letter-spacing:1px}
 [data-theme="impressionist"] .section-title{font-weight:300;letter-spacing:4px;font-style:italic}
 [data-theme="impressionist"] #app::before{
-  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:
     radial-gradient(ellipse at 15% 20%,rgba(126,87,194,.07) 0%,transparent 50%),
     radial-gradient(ellipse at 80% 10%,rgba(66,165,245,.06) 0%,transparent 40%),
@@ -426,7 +427,6 @@ nav button.active{color:var(--primary)}
     radial-gradient(ellipse at 70% 55%,rgba(102,187,106,.04) 0%,transparent 35%),
     radial-gradient(ellipse at 25% 70%,rgba(244,67,54,.03) 0%,transparent 40%);
 }
-[data-theme="impressionist"] #app>*{position:relative;z-index:1}
 
 /* ══════════════════════════════════════
    Theme: ANTIQUE — National Geographic 探検誌 調
@@ -558,13 +558,12 @@ nav button.active{color:var(--primary)}
 [data-theme="cyberpunk"] nav button.active{text-shadow:0 0 8px rgba(0,255,255,.5)}
 [data-theme="cyberpunk"] .section-title{letter-spacing:4px;font-weight:400;text-transform:uppercase}
 [data-theme="cyberpunk"] #app::before{
-  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.03;
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.03;
   background-image:
     linear-gradient(rgba(0,255,255,.3) 1px,transparent 1px),
     linear-gradient(90deg,rgba(0,255,255,.3) 1px,transparent 1px);
   background-size:40px 40px;
 }
-[data-theme="cyberpunk"] #app>*{position:relative;z-index:1}
 
 /* ══════════════════════════════════════
    Theme Picker Modal
@@ -695,6 +694,18 @@ const CATS = [
     kw:['景勝','名勝','百選','八景','展望','眺望'] },
 ];
 const CAT_OTHER = { id:'other', label:'その他', icon:'📍', color:'#78909C', kw:[] };
+const EXCLUDE_KW = [
+  '小学校','中学校','高等学校','高校','大学','学園','学院','専門学校',
+  '幼稚園','保育園','保育所',
+  '郵便局','警察署','交番','消防署','税務署','裁判所','役場','役所','出張所',
+  '病院','医院','クリニック','診療所',
+  '団地','マンション','ニュータウン','住宅',
+  'インターチェンジ','ジャンクション','バス停','バスターミナル',
+  '変電所','発電所','浄水場','処理場','焼却',
+  '工業団地','工場','製作所',
+  '選挙区','行政区','地方議会',
+  'テレビ','ラジオ','放送局',
+];
 
 /* ═══════════ Themes ═══════════ */
 const THEMES = [
@@ -805,6 +816,10 @@ async function reverseGeo(lat,lon){
   try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10&accept-language=ja`);
   const j=await r.json(),a=j.address||{};return a.city||a.town||a.village||a.county||j.display_name?.split(',')[0]||''}catch{return''}
 }
+function isNoise(title,extract){
+  const t=title+(extract||'');
+  return EXCLUDE_KW.some(k=>title.includes(k)) || (extract||'').length<30;
+}
 function categorize(title,extract){
   const t=(title+' '+(extract||'')).toLowerCase();
   for(const c of CATS)if(c.kw.some(k=>t.includes(k.toLowerCase())))return c;
@@ -832,7 +847,7 @@ async function discover(){
       return{id:r.pageid,title:r.title,lat:r.lat,lon:r.lon,dist,dir:bearing(pos.lat,pos.lon,r.lat,r.lon),
         cat:categorize(r.title,d.extract),extract:d.extract||'',thumb:d.thumbnail?.source||'',
         url:d.fullurl||`https://ja.wikipedia.org/wiki/${encodeURIComponent(r.title)}`}
-    }).filter(s=>s.dist<=radius*1.1);
+    }).filter(s=>s.dist<=radius*1.1 && !isNoise(s.title,s.extract));
     spots=rankSpots(spots);showResults();
   }catch(e){
     if(e.code===1)toast('位置情報を許可してください');
