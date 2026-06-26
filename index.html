@@ -749,6 +749,9 @@ const VISIT_KW = [
   '名水','湧水','清流','散策','遊歩道','体験','工房','見学',
 ];
 
+/* ═══════ 外部リンク自動生成テンプレート除外 ═══════ */
+const EXTLINK_NOISE = /google\.\w+\/(search|scholar)|scholar\.google|ci\.nii\.ac\.jp|jstage\.jst\.go\.jp|dlib\.jp|jpsearch\.go\.jp|ndlsearch\.ndl\.go\.jp|geohack\.toolforge|wikipedialibrary/i;
+
 /* ═══════ Stage 3: Noise signals in extract (スコア減点) ═══════ */
 const NOISE_KW = [
   '人口は','面積は','世帯','国勢調査','合併','編入','廃止','人口密度',
@@ -898,14 +901,17 @@ function categorize(title,extract,wikiCats){
   ))return c;
   return CAT_OTHER;
 }
-function scoreSpot(title,extract,hasThumb,cat,nLinks){
+function scoreSpot(title,extract,hasThumb,cat,nLinks,articleLen){
   let s=50;
   const text=title+(extract||''), ext=extract||'', len=ext.length;
   if(cat.id!=='other') s+=30;
   if(hasThumb) s+=20;
-  if(len>100) s+=5;
-  if(len>300) s+=10;
-  if(len>600) s+=15;
+  if(len>100) s+=2;
+  if(len>300) s+=3;
+  if(len>600) s+=5;
+  if(articleLen>=15000) s+=45;
+  else if(articleLen>=8000) s+=30;
+  else if(articleLen>=3000) s+=15;
   if(nLinks>=6) s+=35;
   else if(nLinks>=3) s+=20;
   else if(nLinks>=1) s+=10;
@@ -949,7 +955,7 @@ async function discover(){
       return{id:r.pageid,title:r.title,lat:r.lat,lon:r.lon,dist,dir:bearing(pos.lat,pos.lon,r.lat,r.lon),
         cat,extract:d.extract||'',thumb:d.thumbnail?.source||'',
         url:d.fullurl||`https://ja.wikipedia.org/wiki/${encodeURIComponent(r.title)}`,
-        score:scoreSpot(r.title,d.extract,hasThumb,cat,d.extlinks?.length||0)}
+        score:scoreSpot(r.title,d.extract,hasThumb,cat,(d.extlinks||[]).filter(l=>!EXTLINK_NOISE.test(l['*']||'')).length,d.length||0)}
     }).filter(s=>s.dist<=radius*1.1&&!isExcluded(s.title));
     let th=40;spots=scored.filter(s=>s.score>th);
     if(spots.length<5){th=25;spots=scored.filter(s=>s.score>th)}
