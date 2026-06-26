@@ -673,11 +673,11 @@ const RADII = [
 ];
 const CATS = [
   { id:'shrine',  label:'神社仏閣', icon:'⛩️', color:'#C62828',
-    kw:['神社','寺院','寺','大社','神宮','観音','不動','弁天','薬師','地蔵','稲荷','八幡',
-        '天満宮','東照宮','明神','教会','礼拝堂','修道院','霊場','札所','山寺'] },
+    kw:['神社','寺院','寺','院','大社','神宮','観音','不動','弁天','薬師','地蔵','稲荷','八幡',
+        '天満宮','東照宮','明神','教会','礼拝堂','修道院','霊場','札所','山寺','堂'] },
   { id:'castle',  label:'城・史跡', icon:'🏯', color:'#6A1B9A',
     kw:['城','城跡','城址','史跡','遺跡','古墳','館跡','陣屋','砦','関所','街道','廃寺',
-        '記念碑','銅像','記念塔','遺構','武家屋敷','門','石垣','天守'] },
+        '記念碑','銅像','記念塔','遺構','武家屋敷','門','石垣','天守','城下町','古戦場'] },
   { id:'garden',  label:'花・庭園', icon:'🌸', color:'#AD1457',
     kw:['庭園','植物園','花','梅林','桜','藤','バラ','芝桜','ラベンダー','紫陽花','あじさい',
         '菖蒲','ひまわり','コスモス','ガーデン','花園','フラワー','蓮','彼岸花','チューリップ','菜の花'] },
@@ -685,7 +685,7 @@ const CATS = [
     kw:['温泉','湯','共同浴場','足湯','日帰り湯','露天風呂'] },
   { id:'nature',  label:'自然',     icon:'🌿', color:'#2E7D32',
     kw:['山','岳','滝','渓谷','湖','沼','池','峡','峠','岬','海岸','島','高原','湿原',
-        '鍾乳洞','洞窟','渓流','牧場','海水浴場','ビーチ','干潟','原生林','樹海','巨木','名木'] },
+        '鍾乳洞','洞窟','渓流','牧場','海水浴場','ビーチ','干潟','原生林','樹海','巨木','名木','ダム'] },
   { id:'station', label:'道の駅',   icon:'🅿️',  color:'#1565C0',
     kw:['道の駅','サービスエリア','パーキングエリア'] },
   { id:'museum',  label:'文化施設', icon:'🏛️', color:'#00695C',
@@ -693,7 +693,7 @@ const CATS = [
         '動物園','水族館','天文台','プラネタリウム','劇場','ホール'] },
   { id:'food',    label:'食・名産', icon:'🍶', color:'#E65100',
     kw:['酒造','醸造','ワイナリー','蔵元','ブルワリー','蒸留','直売所','物産館','朝市',
-        '市場','特産','名物','銘菓','観光農園','果樹園','地ビール'] },
+        '市場','特産','名物','銘菓','観光農園','果樹園','地ビール','酒蔵'] },
   { id:'park',    label:'公園',     icon:'🌳', color:'#558B2F',
     kw:['公園','森林公園','自然公園','国立公園','県立公園','都市公園',
         '遊園地','テーマパーク','キャンプ場','オートキャンプ'] },
@@ -704,10 +704,10 @@ const CAT_OTHER = { id:'other', label:'その他', icon:'📍', color:'#78909C',
 
 /* ═══════ Stage 1: Hard Exclude (タイトルに含まれたら即除外) ═══════ */
 const EXCLUDE_KW = [
-  '小学校','中学校','高等学校','高校','大学','学園','学院','専門学校','幼稚園','保育園','保育所',
+  '小学校','中学校','高等学校','高校','大学','学園','学院','専門学校','支援学校','幼稚園','保育園','保育所',
   '郵便局','警察署','交番','消防署','税務署','裁判所','役場','役所','出張所','法務局','合同庁舎',
   '病院','医院','クリニック','診療所','医療センター',
-  '団地','マンション','ニュータウン','住宅','アパート',
+  '団地','マンション','ニュータウン','アパート','住宅地','住宅街',
   'インターチェンジ','ジャンクション','バス停','バスターミナル','料金所',
   '変電所','発電所','浄水場','処理場','焼却','下水','送電',
   '工業団地','工場','製作所','製造所','事業所',
@@ -715,8 +715,12 @@ const EXCLUDE_KW = [
   'テレビ','ラジオ','放送局','新聞社',
   '株式会社','有限会社','合同会社','協同組合',
   'サッカークラブ','フットボールクラブ',
+  '公民館','集会所','体育館',
+  '銀行','信用金庫','信用組合','農協','漁協',
+  '国道','県道','市道','都道','府道',
+  '用水路','放水路','排水機場',
 ];
-const EXCLUDE_RE = /^(.{1,4}(市|町|村|区|郡|県)|\S+支店|\S+営業所)$/;
+const EXCLUDE_RE = /^(.{1,4}(市|町|村|区|郡|県)(\s*\(.+\))?|\S+支店|\S+営業所|\S+丁目)$/;
 
 /* ═══════ Stage 2: Visit-worthy signals (スコア加点) ═══════ */
 const VISIT_KW = [
@@ -726,6 +730,9 @@ const VISIT_KW = [
   '国立公園','国定公園','ジオパーク','絶景','パワースポット',
   '参拝','御朱印','拝観','入場料','開館','営業時間','駐車場',
   '紅葉','新緑','花見','雪景色','夜景','ライトアップ',
+  '伝説','伝承','民話','景色','眺望','一望',
+  '国指定','県指定','市指定','無形文化財',
+  '名水','湧水','清流','散策','遊歩道','体験','工房','見学',
 ];
 
 /* ═══════ Stage 3: Noise signals in extract (スコア減点) ═══════ */
@@ -733,6 +740,8 @@ const NOISE_KW = [
   '人口は','面積は','世帯','国勢調査','合併','編入','廃止','人口密度',
   '設置された','開設された学校','卒業生','校歌','校章',
   '走行距離','路線延長','供用開始',
+  '隣接する自治体','財政力指数','議員定数',
+  '流域面積','管轄区域',
 ];
 
 /* ═══════════ Themes ═══════════ */
@@ -825,27 +834,41 @@ function fmtDist(m){return m<1000?`${Math.round(m)}m`:m<10000?`${(m/1000).toFixe
 
 /* ═══════════ Wikipedia API ═══════════ */
 function searchPoints(lat,lon,r){
-  if(r<=10000) return[{lat,lon,r:Math.min(r,10000)}];
-  const off=.14,lo=off/Math.cos(lat*Math.PI/180);
-  return[{lat,lon,r:10000},{lat:lat+off,lon,r:10000},{lat:lat-off,lon,r:10000},{lat,lon:lon+lo,r:10000},{lat,lon:lon-lo,r:10000}];
+  if(r<=3000) return[{lat,lon,r}];
+  const off=r<=5000?.025:r<=10000?.055:.14;
+  const lo=off/Math.cos(lat*Math.PI/180);
+  const pts=[{lat,lon,r:Math.min(r,10000)},
+    {lat:lat+off,lon,r:Math.min(r,10000)},{lat:lat-off,lon,r:Math.min(r,10000)},
+    {lat,lon:lon+lo,r:Math.min(r,10000)},{lat,lon:lon-lo,r:Math.min(r,10000)}];
+  if(r>10000)pts.push(
+    {lat:lat+off,lon:lon+lo,r:10000},{lat:lat+off,lon:lon-lo,r:10000},
+    {lat:lat-off,lon:lon+lo,r:10000},{lat:lat-off,lon:lon-lo,r:10000});
+  return pts;
 }
 async function geoSearch(lat,lon,r){
   const res=await fetch(`${WIKI}?action=query&list=geosearch&gscoord=${lat}|${lon}&gsradius=${r}&gslimit=50&format=json&origin=*`);
   return(await res.json()).query?.geosearch||[];
 }
 async function fetchDetails(ids){
-  if(!ids.length)return{};const all={};
-  for(let i=0;i<ids.length;i+=50){
-    const res=await fetch(`${WIKI}?action=query&pageids=${ids.slice(i,i+50).join('|')}&prop=extracts|pageimages|info&exintro=1&explaintext=1&pithumbsize=300&inprop=url&format=json&origin=*`);
-    const j=await res.json();if(j.query?.pages)Object.assign(all,j.query.pages);
-  }return all;
+  if(!ids.length)return{};
+  const batches=[];
+  for(let i=0;i<ids.length;i+=50)batches.push(ids.slice(i,i+50));
+  const results=await Promise.all(batches.map(b=>
+    fetch(`${WIKI}?action=query&pageids=${b.join('|')}&prop=extracts|pageimages|info&exintro=1&explaintext=1&pithumbsize=300&inprop=url&format=json&origin=*`).then(r=>r.json())
+  ));
+  const all={};
+  for(const j of results)if(j.query?.pages)Object.assign(all,j.query.pages);
+  return all;
 }
 async function reverseGeo(lat,lon){
   try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10&accept-language=ja`);
   const j=await r.json(),a=j.address||{};return a.city||a.town||a.village||a.county||j.display_name?.split(',')[0]||''}catch{return''}
 }
 function isExcluded(title){
-  return EXCLUDE_KW.some(k=>title.includes(k)) || EXCLUDE_RE.test(title);
+  if(EXCLUDE_KW.some(k=>title.includes(k))) return true;
+  if(EXCLUDE_RE.test(title)) return true;
+  if(/駅(\s*\(.+\))?$/.test(title)&&!title.includes('道の駅')) return true;
+  return false;
 }
 function categorize(title,extract){
   const full=(title+' '+(extract||'')).toLowerCase();
@@ -856,17 +879,22 @@ function categorize(title,extract){
 }
 function scoreSpot(title,extract,hasThumb,cat){
   let s=50;
-  const text=title+(extract||''), len=(extract||'').length;
+  const text=title+(extract||''), ext=extract||'', len=ext.length;
   if(cat.id!=='other') s+=30;
   if(hasThumb) s+=20;
   if(len>100) s+=10;
   if(len>300) s+=10;
   if(len>600) s+=5;
-  VISIT_KW.forEach(k=>{if(text.includes(k)) s+=6});
-  NOISE_KW.forEach(k=>{if((extract||'').includes(k)) s-=8});
+  let vHits=0;
+  VISIT_KW.forEach(k=>{if(text.includes(k)){s+=6;vHits++}});
+  let nHits=0;
+  NOISE_KW.forEach(k=>{if(ext.includes(k)){s-=8;nHits++}});
+  if(nHits>=3&&vHits===0) s-=20;
   if(cat.id==='other'){
     if(!hasThumb) s-=15;
     if(len<80) s-=20;
+    if(vHits===0) s-=10;
+    if(nHits>0&&vHits===0) s-=15;
   }
   return s;
 }
@@ -892,14 +920,17 @@ async function discover(){
     for(const list of results)for(const item of list)if(!seen.has(item.pageid)){seen.add(item.pageid);raw.push(item)}
     if(!raw.length){toast('この辺は穴場すぎました！半径を広げてみてください');return}
     const details=await fetchDetails(raw.map(r=>r.pageid));
-    spots=raw.map(r=>{const d=details[r.pageid]||{},dist=haversine(pos.lat,pos.lon,r.lat,r.lon);
+    const scored=raw.map(r=>{const d=details[r.pageid]||{},dist=haversine(pos.lat,pos.lon,r.lat,r.lon);
       const cat=categorize(r.title,d.extract),hasThumb=!!d.thumbnail?.source;
       return{id:r.pageid,title:r.title,lat:r.lat,lon:r.lon,dist,dir:bearing(pos.lat,pos.lon,r.lat,r.lon),
         cat,extract:d.extract||'',thumb:d.thumbnail?.source||'',
         url:d.fullurl||`https://ja.wikipedia.org/wiki/${encodeURIComponent(r.title)}`,
         score:scoreSpot(r.title,d.extract,hasThumb,cat)}
-    }).filter(s=>s.dist<=radius*1.1 && !isExcluded(s.title) && s.score>25);
-    if(!spots.length){toast('この辺は穴場すぎました！半径を広げてみてください');return}
+    }).filter(s=>s.dist<=radius*1.1&&!isExcluded(s.title));
+    let th=40;spots=scored.filter(s=>s.score>th);
+    if(spots.length<5){th=25;spots=scored.filter(s=>s.score>th)}
+    if(spots.length<3){th=15;spots=scored.filter(s=>s.score>th)}
+    if(!spots.length){toast(scored.length?`${raw.length}件中、おすすめスポットが見つかりません。半径を広げてみてください`:'近くにWikipedia記事がありません。半径を広げてみてください');return}
     spots=rankSpots(spots);showResults();
   }catch(e){
     if(e.code===1)toast('位置情報を許可してください');
