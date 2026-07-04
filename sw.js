@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yorimichi-v4';
+const CACHE_NAME = 'yorimichi-v5';
 const SHELL = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
